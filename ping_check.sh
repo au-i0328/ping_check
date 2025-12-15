@@ -6,5 +6,5 @@ while true; do
             beep -f 882 -l 200   # 882 Hz, 200 ms
         done
     fi
-    sleep 15
+    sleep 5
 done

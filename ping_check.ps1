@@ -10,5 +10,5 @@ while ($true) {
     if (-not (Test-Connection 8.8.8.8 -Count 1 -Quiet)) {
         Play-Alert
     }
-    Start-Sleep -Seconds 15
+    Start-Sleep -Seconds 5
 }
