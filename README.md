@@ -18,3 +18,5 @@ brew install sox
 
 Execute with:
 sudo sh ping_check_mac.sh
+
+Pings 8.8.8.8 every 5 seconds, if ping fails, play a tone of 882hz in default audio device every 200ms until connection is reived.
