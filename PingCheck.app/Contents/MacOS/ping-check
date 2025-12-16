@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Network Connectivity Monitor - macOS App Bundle
+# Runs headless; safe to launch from Spotlight
+
+# Add common Homebrew paths to PATH for LaunchAgent/App execution
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+# Prevent duplicate instances (exclude current PID)
+if pgrep -f "/PingCheck.app/Contents/MacOS/ping-check" | grep -v "$$" >/dev/null 2>&1; then
+  osascript -e 'display notification "Ping Check is already running." with title "Ping Check"'
+  exit 0
+fi
+
+# Ensure sox is installed
+if ! command -v play &> /dev/null; then
+    osascript -e 'display alert "Ping Check" message "Sox (play) not found. Install with:\n\n  brew install sox" as critical'
+    exit 1
+fi
+
+# Small kickoff notification (non-blocking)
+osascript -e 'display notification "Monitoring connectivity to 8.8.8.8" with title "Ping Check"'
+
+LOG_DIR="$HOME/.ping-check"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/ping-check.log"
+
+# Main monitoring loop (foreground)
+while true; do
+  if ! ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1; then
+    echo "[$(date)] Connection failed!" >> "$LOG_FILE"
+    while ! ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1; do
+      play -n synth 0.2 square 882 2>/dev/null
+    done
+    echo "[$(date)] Connection restored" >> "$LOG_FILE"
+  fi
+  sleep 5
+done

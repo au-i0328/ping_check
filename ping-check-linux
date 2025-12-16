@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Network Connectivity Monitor
+# This wrapper ensures the systemd service runs properly with logging
+
+set -e
+
+# Check for beep utility, fallback to speaker-test or paplay
+if ! command -v beep &> /dev/null; then
+    if ! command -v paplay &> /dev/null; then
+        echo "Error: beep utility not found. Install with: sudo apt-get install beep" >&2
+        exit 1
+    fi
+fi
+
+while true; do
+    if ! ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Connection failed, alerting..." >&2
+        while ! ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1; do
+            if command -v beep &> /dev/null; then
+                beep -f 882 -l 200
+            else
+                # Fallback to paplay (PulseAudio)
+                paplay -s 8000 /dev/stdin <<< "$(printf '\xff\x00' | fold -w1 | head -c 1600)" 2>/dev/null || true
+            fi
+            sleep 0.5
+        done
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Connection restored" >&2
+    fi
+    sleep 5
+done

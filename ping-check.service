@@ -1,0 +1,17 @@
+[Unit]
+Description=Network Connectivity Monitor
+Documentation=man:ping(8)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ping-check
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ping-check
+
+[Install]
+WantedBy=multi-user.target
